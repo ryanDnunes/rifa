@@ -7,6 +7,18 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Estilos CSS aqui */
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background-color: rgba(240, 240, 240, 0.8);
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        .admin-section, #admin-login {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -189,7 +201,7 @@
                 }
             });
 
-            // Função para enviar mensagem para o WhatsApp usando Twilio (exemplo)
+            // Função para enviar mensagem para o WhatsApp
             function sendWhatsAppMessage(number, phone) {
                 const message = `Parabéns! Você confirmou o número ${number}. Agora basta confirmar seu pagamento, a chave pix é cpf: 02856886000`;
                 const whatsappLink = `https://wa.me/5551985109343?text=${encodeURIComponent(message)}`;
