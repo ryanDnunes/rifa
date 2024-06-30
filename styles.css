@@ -1,0 +1,111 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    position: relative;
+    background-image: url('imagens/fundoreal.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.container {
+    max-width: 500px;
+    margin: auto; /* Isso centraliza horizontalmente */
+    background-color: rgba(240, 240, 240, 0.8);
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    text-align: center; /* Centraliza o texto dentro do container */
+}
+
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    box-sizing: border-box;
+}
+
+.primeiro_texto {
+    margin-bottom: 20px;
+    color: #231d28;
+    font-size: 24px;
+    font-family: Courier New, monospace;
+}
+
+.video-player {
+    width: 30%;
+    max-width: 300px;
+    display: block;
+    position: absolute;
+    top: 100px;
+    left: 20px;
+}
+
+.texto_video {
+    margin-bottom: 20px;
+    color: #231d28;
+    font-size: 16px;
+    font-family: Snell Roundhand, cursive;
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.img_premio {
+    width: 30%;
+    max-width: 300px;
+    display: block;
+    position: absolute;
+    top: 300px;
+    left: 20px;
+}
+
+.img_gif, .img_gif2 {
+    width: 30%;
+    max-width: 300px;
+    display: block;
+    position: absolute;
+}
+
+.img_gif {
+    top: 100px;
+    left: 0;
+    animation: moveHorizontal 5s linear infinite;
+}
+
+.img_gif2 {
+    top: 400px;
+    right: 0;
+    transform: scaleX(-1);
+    animation: moveHorizontalReverse 5s linear infinite;
+}
+
+@keyframes moveHorizontal {
+    0% {
+        left: 0;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes moveHorizontalReverse {
+    0% {
+        right: 0;
+    }
+    100% {
+        right: 100%;
+    }
+}
