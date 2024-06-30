@@ -11,12 +11,14 @@ body {
 
 .container {
     max-width: 500px;
-    margin: auto;
+    margin: auto; /* Isso centraliza horizontalmente */
     background-color: rgba(240, 240, 240, 0.8);
     padding: 20px;
     box-sizing: border-box;
     border: 1px solid #ccc;
+    text-align: center; /* Centraliza o texto dentro do container */
 }
+
 
 label {
     display: block;
