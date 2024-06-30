@@ -59,6 +59,13 @@
             <button id="reset-button">Reiniciar</button>
             <input type="file" id="file-input" accept=".csv">
             <label for="file-input">Inserir Novo Excel</label>
+            <!-- Novo formulário para remover participante -->
+            <h2>Remover Participante</h2>
+            <form id="remove-participant-form">
+                <label for="remove-number">Número</label>
+                <input type="number" id="remove-number" name="remove-number" required>
+                <button type="submit">Remover</button>
+            </form>
         </div>
     </div>
 
@@ -213,6 +220,26 @@
                 // Exibe o botão "Trabalhos Realizados" ao enviar o pedido
                 document.querySelector('.trabalhos-realizados-btn').style.display = 'block';
             }
+
+            document.getElementById('remove-participant-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const numberToRemove = parseInt(document.getElementById('remove-number').value);
+                const index = raffleData.findIndex(item => item.numero === numberToRemove);
+
+                if (index !== -1 && !raffleData[index].disponibilidade) {
+                    raffleData[index].disponibilidade = true;
+                    raffleData[index].nome = '';
+                    raffleData[index].telefone = '';
+                    raffleData[index].email = '';
+
+                    localStorage.setItem('raffleData', JSON.stringify(raffleData));
+                    alert(`Número ${numberToRemove} foi removido com sucesso!`);
+                    location.reload(); // Recarrega a página após a remoção
+                } else {
+                    alert('Número não encontrado ou já disponível.');
+                }
+            });
         });
     </script>
 </body>
