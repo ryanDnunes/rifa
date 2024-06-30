@@ -1,151 +1,215 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    position: relative;
-    background-image: url('imagens/fundoreal.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa - Cliente e Administração</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-section {
+            display: none; /* Oculta a seção de administração inicialmente */
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        label[for="file-input"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="cliente-section">
+        <p class="texto_video">
+            A bike do Victor foi roubada a uma semana, era uma das<br>
+            poucas coisas que o ajudava na luta contra a obesidade
+        </p>
+        <video src="imagens/video1.mp4" controls class="video-player"></video>
+        <img src="imagens/fundo2.png" class="img_premio">
+        <img src="imagens/gif_bike.gif" class="img_gif">
+        <img src="imagens/gif_bike.gif" class="img_gif2">
+        <div class="container">
+            <h1 class="primeiro_texto">Rifa do Victor:</h1>
+            <form id="raffle-form">
+                <label for="name">Nome</label>
+                <input type="text" id="name" name="name" required>
+                <label for="phone">Telefone</label>
+                <input type="text" id="phone" name="phone" required>
+                <label for="email">Email (opcional)</label>
+                <input type="email" id="email" name="email">
+                <label for="number">Número</label>
+                <select id="number" name="number" required>
+                    <!-- Números disponíveis serão preenchidos aqui pelo JavaScript -->
+                </select>
+                <button type="submit">Confirmar</button>
+            </form>
+            <button id="admin-button">Administração</button>
+        </div>
+    </div>
 
-.container {
-    max-width: 100%; /* Alterado para ocupar toda a largura do dispositivo */
-    margin: auto;
-    background-color: rgba(240, 240, 240, 0.8);
-    padding: 20px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-}
+    <div class="admin-section" id="admin-section">
+        <div class="container">
+            <h1>Painel de Controle</h1>
+            <button id="draw-button">Sortear</button>
+            <button id="export-button">Exportar Excel</button>
+            <button id="reset-button">Reiniciar</button>
+            <input type="file" id="file-input" accept=".csv">
+            <label for="file-input">Inserir Novo Excel</label>
+        </div>
+    </div>
 
-.label {
-    margin: 10px 0 5px;
-}
+    <div id="admin-login" class="container">
+        <h2>Login de Administração</h2>
+        <label for="admin-password">Senha</label>
+        <input type="password" id="admin-password">
+        <button id="login-button">Entrar</button>
+    </div>
 
-input, select, button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    box-sizing: border-box;
-}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializa os números disponíveis se não estiverem no localStorage
+            if (!localStorage.getItem('raffleData')) {
+                const initialData = [];
+                for (let i = 1; i <= 1000; i++) {
+                    initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
+                }
+                localStorage.setItem('raffleData', JSON.stringify(initialData));
+            }
 
-.primeiro_texto {
-    margin-bottom: 20px;
-    color: #231d28;
-    font-size: 24px;
-    font-family: Courier New, monospace;
-}
+            const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+            const availableNumbers = raffleData.filter(item => item.disponibilidade);
 
-.video-player, .img_premio, .img_gif, .img_gif2 {
-    width: 100%; /* Alterado para ocupar toda a largura do dispositivo */
-    max-width: 100%; /* Ajustado para ser responsivo */
-    display: block;
-    position: relative; /* Posição relativa para ajustar conforme necessário */
-    margin: 10px auto; /* Margem automática para centralizar */
-}
+            const select = document.getElementById('number');
+            availableNumbers.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.numero;
+                option.textContent = item.numero;
+                select.appendChild(option);
+            });
 
-.texto_video {
-    margin-bottom: 20px;
-    color: #231d28;
-    font-size: 16px;
-    font-family: Snell Roundhand, cursive;
-    background-color: white;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: block;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
+            document.getElementById('raffle-form').addEventListener('submit', function(e) {
+                e.preventDefault();
 
+                const name = document.getElementById('name').value;
+                const phone = document.getElementById('phone').value;
+                const email = document.getElementById('email').value;
+                const number = parseInt(document.getElementById('number').value);
 
-label {
-    display: block;
-    margin: 10px 0 5px;
-}
+                const index = raffleData.findIndex(item => item.numero === number);
+                if (index !== -1 && raffleData[index].disponibilidade) {
+                    raffleData[index].disponibilidade = false;
+                    raffleData[index].nome = name;
+                    raffleData[index].telefone = phone;
+                    raffleData[index].email = email;
 
-input, select, button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    box-sizing: border-box;
-}
+                    localStorage.setItem('raffleData', JSON.stringify(raffleData));
+                    alert('Número confirmado com sucesso!');
+                    location.reload(); // Recarrega a página após a confirmação
+                } else {
+                    alert('Erro ao confirmar número. Tente novamente.');
+                }
+            });
 
-.primeiro_texto {
-    margin-bottom: 20px;
-    color: #231d28; /* Cor do texto */
-    font-size: 24px;
-    font-family: Courier New, monospace; /* Tipo de letra específico para o título */
-}
+            document.getElementById('admin-button').addEventListener('click', function() {
+                document.getElementById('admin-login').style.display = 'block';
+            });
 
-.video-player {
-    width: 30%; /* Define a largura do vídeo */
-    max-width: 300px; /* Define a largura máxima do vídeo */
-    display: block; /* Garante que o vídeo seja exibido como bloco */
-    position: absolute; /* Posiciona o vídeo de forma absoluta */
-    top: 100px; /* Afasta o vídeo 20px do topo */
-    left: 20px; /* Alinha o vídeo 20px à esquerda */
-}
+            document.getElementById('login-button').addEventListener('click', function() {
+                const password = document.getElementById('admin-password').value;
+                if (password === '2106tricolor1307') {
+                    document.getElementById('admin-section').style.display = 'block';
+                    document.getElementById('admin-login').style.display = 'none';
+                } else {
+                    alert('Senha incorreta!');
+                }
+            });
 
-.texto_video {
-    margin-bottom: 20px; /* Margem inferior para separar do vídeo */
-    color: #231d28; /* Cor do texto */
-    font-size: 16px; /* Tamanho da fonte */
-    font-family: Snell Roundhand, cursive; /* Tipo de letra específico para o texto */
-    background-color: white; /* Cor de fundo para o texto */
-    padding: 10px; /* Espaçamento interno */
-    border-radius: 5px; /* Borda arredondada */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
-    display: inline-block; /* Faz o parágrafo comportar-se como um bloco inline */
-    max-width: 100%; /* Define a largura máxima */
-    word-wrap: break-word; /* Quebra de palavra para evitar que o texto ultrapasse */
-    overflow-wrap: break-word; /* Quebra de palavra para evitar que o texto ultrapasse */
-}
+            document.getElementById('draw-button').addEventListener('click', function() {
+                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+                const chosenNumbers = raffleData.filter(item => !item.disponibilidade);
+                if (chosenNumbers.length < 3) {
+                    alert('Não há números suficientes confirmados para sortear.');
+                    return;
+                }
 
+                const winners = [];
+                while (winners.length < 3) {
+                    const index = Math.floor(Math.random() * chosenNumbers.length);
+                    if (!winners.includes(chosenNumbers[index])) {
+                        winners.push(chosenNumbers[index]);
+                    }
+                }
 
-.img_premio{
-    width: 30%; /* Define a largura do vídeo */
-    max-width: 300px; /* Define a largura máxima do vídeo */
-    display: block; /* Garante que o vídeo seja exibido como bloco */
-    position: absolute; /* Posiciona o vídeo de forma absoluta */
-    top: 100px; /* Afasta o vídeo 20px do topo */
-    left: 1000px; /* Alinha o vídeo 20px à esquerda */  
-}
+                alert(`Vencedores:\n1º: ${winners[0].nome} (${winners[0].telefone})\n2º: ${winners[1].nome} (${winners[1].telefone})\n3º: ${winners[2].nome} (${winners[2].telefone})`);
+            });
 
-.img_gif, .img_gif2 {
-    width: 30%; /* Define a largura da imagem */
-    max-width: 300px; /* Define a largura máxima da imagem */
-    display: block; /* Garante que a imagem seja exibida como bloco */
-    position: absolute; /* Posiciona a imagem de forma absoluta */
-}
+            document.getElementById('export-button').addEventListener('click', function() {
+                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+                const csvContent = "data:text/csv;charset=utf-8,"
+                    + "numero,disponibilidade,nome,email,telefone\n"
+                    + raffleData.map(e => `${e.numero},${e.disponibilidade},${e.nome},${e.email},${e.telefone}`).join("\n");
 
-.img_gif {
-    top: 100px; /* Afasta a imagem 100px do topo */
-    left: 0; /* Começa a imagem à esquerda */
-    animation: moveHorizontal 5s linear infinite; /* Animação para mover horizontalmente */
-}
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "rifa.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
 
-.img_gif2 {
-    top: 400px; /* Afasta a imagem 400px do topo */
-    right: 0; /* Começa a imagem à direita */
-    transform: scaleX(-1); /* Espelha a imagem horizontalmente */
-    animation: moveHorizontalReverse 5s linear infinite; /* Animação para mover horizontalmente em sentido inverso */
-}
+            document.getElementById('reset-button').addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja reiniciar a rifa? Todos os dados serão perdidos.')) {
+                    const initialData = [];
+                    for (let i = 1; i <= 1000; i++) {
+                        initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
+                    }
+                    localStorage.setItem('raffleData', JSON.stringify(initialData));
+                    alert('Rifa reiniciada com sucesso!');
+                    location.reload(); // Recarrega a página após a reinicialização
+                }
+            });
 
-@keyframes moveHorizontal {
-    0% {
-        left: 0;
-    }
-    100% {
-        left: 100%;
-    }
-}
+            document.getElementById('file-input').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const contents = e.target.result;
+                        const lines = contents.split('\n').map(line => line.split(','));
+                        const newRaffleData = lines.slice(1).map(line => ({
+                            numero: parseInt(line[0]),
+                            disponibilidade: line[1] === 'true',
+                            nome: line[2],
+                            email: line[3],
+                            telefone: line[4]
+                        }));
 
-@keyframes moveHorizontalReverse {
-    0% {
-        right: 0;
-    }
-    100% {
-        right: 100%;
-    }
-}
+                        localStorage.setItem('raffleData', JSON.stringify(newRaffleData));
+                        alert('Novo Excel inserido com sucesso!');
+                        location.reload(); // Recarrega a página após a atualização
+                    };
+                    reader.readAsText(file);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
