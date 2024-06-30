@@ -1,38 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rifa - Cliente e Administração</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        .admin-section {
-            display: none; /* Oculta a seção de administração inicialmente */
-        }
-        .container {
-            max-width: 500px;
-            margin: auto;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        label[for="file-input"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            box-sizing: border-box;
-            cursor: pointer;
-            background-color: #f0f0f0;
-            text-align: center;
-            border: 1px solid #ccc;
-        }
+        /* Estilos CSS aqui */
     </style>
 </head>
 <body>
@@ -41,12 +15,13 @@
             A bike do Victor foi roubada a uma semana, era uma das<br>
             poucas coisas que o ajudava na luta contra a obesidade
         </p>
-        <video src="imagens/video1.mp4" controls class="video-player"></video>
-        <img src="imagens/fundo2.png" class="img_premio">
-        <img src="imagens/gif_bike.gif" class="img_gif">
-        <img src="imagens/gif_bike.gif" class="img_gif2">
+
         <div class="container">
             <h1 class="primeiro_texto">Rifa do Victor:</h1>
+            <video src="imagens/video1.mp4" controls class="video-player"></video>
+            <img src="imagens/fundo2.png" class="img_premio">
+            <img src="imagens/gif_bike.gif" class="img_gif">
+            <img src="imagens/gif_bike.gif" class="img_gif2">
             <form id="raffle-form">
                 <label for="name">Nome</label>
                 <input type="text" id="name" name="name" required>
@@ -120,7 +95,11 @@
                     raffleData[index].email = email;
 
                     localStorage.setItem('raffleData', JSON.stringify(raffleData));
-                    alert('Número confirmado com sucesso!');
+                    alert('Número confirmado com sucesso! Enviando mensagem para o WhatsApp.');
+
+                    // Chamada para enviar mensagem via WhatsApp
+                    sendWhatsAppMessage(number, phone);
+
                     location.reload(); // Recarrega a página após a confirmação
                 } else {
                     alert('Erro ao confirmar número. Tente novamente.');
@@ -209,6 +188,19 @@
                     reader.readAsText(file);
                 }
             });
+
+            // Função para enviar mensagem para o WhatsApp usando Twilio (exemplo)
+            function sendWhatsAppMessage(number, phone) {
+                const message = `Parabéns! Você confirmou o número ${number}. Agora basta confirmar seu pagamento, a chave pix é cpf: 02856886000`;
+                const whatsappLink = `https://wa.me/5551985109343?text=${encodeURIComponent(message)}`;
+
+                window.open(whatsappLink);
+
+                // Oculta o botão "Satisfeito" após enviar o pedido
+                document.getElementById('satisfeito-btn').style.display = 'none';
+                // Exibe o botão "Trabalhos Realizados" ao enviar o pedido
+                document.querySelector('.trabalhos-realizados-btn').style.display = 'block';
+            }
         });
     </script>
 </body>
