@@ -77,53 +77,72 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializa os números disponíveis se não estiverem no localStorage
-            if (!localStorage.getItem('raffleData')) {
-                const initialData = [];
-                for (let i = 1; i <= 1000; i++) {
-                    initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
-                }
-                localStorage.setItem('raffleData', JSON.stringify(initialData));
-            }
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para atualizar os números disponíveis no formulário
+    function updateAvailableNumbers() {
+        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+        const availableNumbers = raffleData.filter(item => item.disponibilidade);
 
-            const raffleData = JSON.parse(localStorage.getItem('raffleData'));
-            const availableNumbers = raffleData.filter(item => item.disponibilidade);
+        const select = document.getElementById('number');
+        select.innerHTML = ''; // Limpa as opções atuais
 
-            const select = document.getElementById('number');
-            availableNumbers.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.numero;
-                option.textContent = item.numero;
-                select.appendChild(option);
-            });
+        availableNumbers.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.numero;
+            option.textContent = item.numero;
+            select.appendChild(option);
+        });
+    }
 
-            document.getElementById('raffle-form').addEventListener('submit', function(e) {
-                e.preventDefault();
+    // Inicializa os números disponíveis se não estiverem no localStorage
+    if (!localStorage.getItem('raffleData')) {
+        const initialData = [];
+        for (let i = 1; i <= 1000; i++) {
+            initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
+        }
+        localStorage.setItem('raffleData', JSON.stringify(initialData));
+    }
 
-                const name = document.getElementById('name').value;
-                const phone = document.getElementById('phone').value;
-                const email = document.getElementById('email').value;
-                const number = parseInt(document.getElementById('number').value);
+    // Atualiza os números disponíveis ao carregar a página
+    updateAvailableNumbers();
 
-                const index = raffleData.findIndex(item => item.numero === number);
-                if (index !== -1 && raffleData[index].disponibilidade) {
-                    raffleData[index].disponibilidade = false;
-                    raffleData[index].nome = name;
-                    raffleData[index].telefone = phone;
-                    raffleData[index].email = email;
+    // Evento ao confirmar um número na rifa
+    document.getElementById('raffle-form').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-                    localStorage.setItem('raffleData', JSON.stringify(raffleData));
-                    alert('Número confirmado com sucesso! Enviando mensagem para o WhatsApp.');
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const email = document.getElementById('email').value;
+        const number = parseInt(document.getElementById('number').value);
 
-                    // Chamada para enviar mensagem via WhatsApp
-                    sendWhatsAppMessage(number, phone);
+        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+        const index = raffleData.findIndex(item => item.numero === number);
 
-                    location.reload(); // Recarrega a página após a confirmação
-                } else {
-                    alert('Erro ao confirmar número. Tente novamente.');
-                }
-            });
+        if (index !== -1 && raffleData[index].disponibilidade) {
+            raffleData[index].disponibilidade = false;
+            raffleData[index].nome = name;
+            raffleData[index].telefone = phone;
+            raffleData[index].email = email;
+
+            localStorage.setItem('raffleData', JSON.stringify(raffleData));
+            alert('Número confirmado com sucesso! Enviando mensagem para o WhatsApp.');
+
+            // Notifica outros dispositivos sobre a mudança
+            const event = new CustomEvent('raffleDataChanged', { detail: raffleData });
+            window.dispatchEvent(event);
+
+            location.reload(); // Recarrega a página após a confirmação
+        } else {
+            alert('Erro ao confirmar número. Tente novamente.');
+        }
+    });
+
+    // Listener para atualizar dados quando receber uma notificação de mudança
+    window.addEventListener('raffleDataChanged', function(event) {
+        const updatedData = event.detail;
+        localStorage.setItem('raffleData', JSON.stringify(updatedData));
+        updateAvailableNumbers(); // Atualiza os números disponíveis na página
+    });
 
             document.getElementById('admin-button').addEventListener('click', function() {
                 document.getElementById('admin-login').style.display = 'block';
