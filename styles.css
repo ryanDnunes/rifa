@@ -68,7 +68,7 @@ input, select, button {
     display: block; /* Garante que o vídeo seja exibido como bloco */
     position: absolute; /* Posiciona o vídeo de forma absoluta */
     top: 100px; /* Afasta o vídeo 20px do topo */
-    left: 1000px; /* Alinha o vídeo 20px à esquerda */  
+    left: 1300px; /* Alinha o vídeo 20px à esquerda */  
 }
 
 .img_gif, .img_gif2 {
