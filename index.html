@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rifa - Cliente e Administração</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         /* Estilos CSS aqui */
         .container {
@@ -79,181 +78,188 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Função para atualizar os números disponíveis no formulário
-            function updateAvailableNumbers() {
-                database.ref('raffleData').once('value', snapshot => {
-                    const raffleData = snapshot.val() || [];
-                    const availableNumbers = raffleData.filter(item => item.disponibilidade);
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para atualizar os números disponíveis no formulário
+    function updateAvailableNumbers() {
+        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+        const availableNumbers = raffleData.filter(item => item.disponibilidade);
 
-                    const select = document.getElementById('number');
-                    select.innerHTML = ''; // Limpa as opções atuais
+        const select = document.getElementById('number');
+        select.innerHTML = ''; // Limpa as opções atuais
 
-                    availableNumbers.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.numero;
-                        option.textContent = item.numero;
-                        select.appendChild(option);
-                    });
-                });
-            }
-
-            // Atualiza os números disponíveis ao carregar a página
-            updateAvailableNumbers();
-
-            // Evento ao confirmar um número na rifa
-            document.getElementById('raffle-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const name = document.getElementById('name').value;
-                const phone = document.getElementById('phone').value;
-                const email = document.getElementById('email').value;
-                const number = parseInt(document.getElementById('number').value);
-
-                database.ref(`raffleData/${number}`).once('value', snapshot => {
-                    const data = snapshot.val();
-
-                    if (data.disponibilidade) {
-                        database.ref(`raffleData/${number}`).update({
-                            disponibilidade: false,
-                            nome: name,
-                            telefone: phone,
-                            email: email
-                        }).then(() => {
-                            alert('Número confirmado com sucesso!');
-                            sendWhatsAppMessage(number, phone); // Chama a função para enviar a mensagem
-                        }).catch(error => {
-                            console.error('Erro ao confirmar número:', error);
-                            alert('Erro ao confirmar número. Tente novamente.');
-                        });
-                    } else {
-                        alert('Erro ao confirmar número. Tente novamente.');
-                    }
-                });
-            });
-
-            // Função para enviar mensagem para o WhatsApp
-            function sendWhatsAppMessage(number, phone) {
-                const message = `Parabéns! Você confirmou o número ${number}. Agora basta confirmar seu pagamento, a chave pix é cpf: 02856886000`;
-                const whatsappLink = `https://wa.me/5551985109343?text=${encodeURIComponent(message)}`;
-
-                window.open(whatsappLink);
-
-                // Oculta o botão "Confirmar" após enviar a mensagem
-                document.querySelector('button[type="submit"]').style.display = 'none';
-                // Exibe uma mensagem ou botão de confirmação ao enviar a mensagem
-                document.querySelector('.confirmacao_msg').style.display = 'block';
-            }
-
-            // Listener para atualizar dados quando houver mudanças no Firebase
-            database.ref('raffleData').on('value', snapshot => {
-                updateAvailableNumbers(); // Atualiza os números disponíveis na página
-            });
-
-            document.getElementById('admin-button').addEventListener('click', function() {
-                document.getElementById('admin-login').style.display = 'block';
-            });
-
-            document.getElementById('login-button').addEventListener('click', function() {
-                const password = document.getElementById('admin-password').value;
-                if (password === '2106tricolor1307') {
-                    document.getElementById('admin-section').style.display = 'block';
-                    document.getElementById('admin-login').style.display = 'none';
-                } else {
-                    alert('Senha incorreta!');
-                }
-            });
-
-            document.getElementById('draw-button').addEventListener('click', function() {
-                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
-                const chosenNumbers = raffleData.filter(item => !item.disponibilidade);
-                if (chosenNumbers.length < 3) {
-                    alert('Não há números suficientes confirmados para sortear.');
-                    return;
-                }
-
-                const winners = [];
-                while (winners.length < 3) {
-                    const index = Math.floor(Math.random() * chosenNumbers.length);
-                    if (!winners.includes(chosenNumbers[index])) {
-                        winners.push(chosenNumbers[index]);
-                    }
-                }
-
-                alert(`Vencedores:\n1º: ${winners[0].nome} (${winners[0].telefone})\n2º: ${winners[1].nome} (${winners[1].telefone})\n3º: ${winners[2].nome} (${winners[2].telefone})`);
-            });
-
-            document.getElementById('export-button').addEventListener('click', function() {
-                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
-                const csvContent = "data:text/csv;charset=utf-8,"
-                    + "numero,disponibilidade,nome,email,telefone\n"
-                    + raffleData.map(e => `${e.numero},${e.disponibilidade},${e.nome},${e.email},${e.telefone}`).join("\n");
-
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "rifa.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-
-            document.getElementById('reset-button').addEventListener('click', function() {
-                if (confirm('Tem certeza que deseja reiniciar a rifa? Todos os dados serão perdidos.')) {
-                    const initialData = [];
-                    for (let i = 1; i <= 1000; i++) {
-                        initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
-                    }
-                    localStorage.setItem('raffleData', JSON.stringify(initialData));
-                    alert('Rifa reiniciada com sucesso!');
-                    location.reload(); // Recarrega a página após a reinicialização
-                }
-            });
-
-            document.getElementById('file-input').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const contents = e.target.result;
-                        const lines = contents.split('\n').map(line => line.split(','));
-                        const newRaffleData = lines.slice(1).map(line => ({
-                            numero: parseInt(line[0]),
-                            disponibilidade: line[1] === 'true',
-                            nome: line[2],
-                            email: line[3],
-                            telefone: line[4]
-                        }));
-
-                        localStorage.setItem('raffleData', JSON.stringify(newRaffleData));
-                        alert('Novo Excel inserido com sucesso!');
-                        location.reload(); // Recarrega a página após a atualização
-                    };
-                    reader.readAsText(file);
-                }
-            });
-
-            document.getElementById('remove-participant-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const numberToRemove = parseInt(document.getElementById('remove-number').value);
-                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
-                const index = raffleData.findIndex(item => item.numero === numberToRemove);
-
-                if (index !== -1 && !raffleData[index].disponibilidade) {
-                    raffleData[index].disponibilidade = true;
-                    raffleData[index].nome = '';
-                    raffleData[index].telefone = '';
-                    raffleData[index].email = '';
-
-                    localStorage.setItem('raffleData', JSON.stringify(raffleData));
-                    alert(`Número ${numberToRemove} foi removido com sucesso!`);
-                    location.reload(); // Recarrega a página após a remoção
-                } else {
-                    alert('Número não encontrado ou já disponível.');
-                }
-            });
+        availableNumbers.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.numero;
+            option.textContent = item.numero;
+            select.appendChild(option);
         });
+    }
+
+    // Inicializa os números disponíveis se não estiverem no localStorage
+    if (!localStorage.getItem('raffleData')) {
+        const initialData = [];
+        for (let i = 1; i <= 1000; i++) {
+            initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
+        }
+        localStorage.setItem('raffleData', JSON.stringify(initialData));
+    }
+
+    // Atualiza os números disponíveis ao carregar a página
+    updateAvailableNumbers();
+
+    // Função para enviar mensagem para o WhatsApp
+    function sendWhatsAppMessage(number, phone) {
+        const message = `Parabéns! Você confirmou o número ${number}. Agora basta confirmar seu pagamento, a chave pix é cpf: 02856886000`;
+        const whatsappLink = `https://wa.me/5551985109343?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappLink);
+
+        // Oculta o botão "Confirmar" após enviar a mensagem
+        document.querySelector('button[type="submit"]').style.display = 'none';
+        // Exibe uma mensagem ou botão de confirmação ao enviar a mensagem
+        document.querySelector('.confirmacao_msg').style.display = 'block';
+    }
+
+    // Evento ao confirmar um número na rifa
+    document.getElementById('raffle-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const email = document.getElementById('email').value;
+        const number = parseInt(document.getElementById('number').value);
+
+        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+        const index = raffleData.findIndex(item => item.numero === number);
+
+        if (index !== -1 && raffleData[index].disponibilidade) {
+            raffleData[index].disponibilidade = false;
+            raffleData[index].nome = name;
+            raffleData[index].telefone = phone;
+            raffleData[index].email = email;
+
+            localStorage.setItem('raffleData', JSON.stringify(raffleData));
+            alert('Número confirmado com sucesso! Enviando mensagem para o WhatsApp.');
+
+            sendWhatsAppMessage(number, phone); // Chama a função para enviar a mensagem
+
+            location.reload(); // Recarrega a página após a confirmação
+        } else {
+            alert('Erro ao confirmar número. Tente novamente.');
+        }
+    });
+
+    // Listener para atualizar dados quando receber uma notificação de mudança
+    window.addEventListener('raffleDataChanged', function(event) {
+        const updatedData = event.detail;
+        localStorage.setItem('raffleData', JSON.stringify(updatedData));
+        updateAvailableNumbers(); // Atualiza os números disponíveis na página
+    });
+
+    document.getElementById('admin-button').addEventListener('click', function() {
+        document.getElementById('admin-login').style.display = 'block';
+    });
+
+    document.getElementById('login-button').addEventListener('click', function() {
+        const password = document.getElementById('admin-password').value;
+        if (password === '2106tricolor1307') {
+            document.getElementById('admin-section').style.display = 'block';
+            document.getElementById('admin-login').style.display = 'none';
+        } else {
+            alert('Senha incorreta!');
+        }
+    });
+
+    document.getElementById('draw-button').addEventListener('click', function() {
+        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+        const chosenNumbers = raffleData.filter(item => !item.disponibilidade);
+        if (chosenNumbers.length < 3) {
+            alert('Não há números suficientes confirmados para sortear.');
+            return;
+        }
+
+        const winners = [];
+        while (winners.length < 3) {
+            const index = Math.floor(Math.random() * chosenNumbers.length);
+            if (!winners.includes(chosenNumbers[index])) {
+                winners.push(chosenNumbers[index]);
+            }
+        }
+
+        alert(`Vencedores:\n1º: ${winners[0].nome} (${winners[0].telefone})\n2º: ${winners[1].nome} (${winners[1].telefone})\n3º: ${winners[2].nome} (${winners[2].telefone})`);
+    });
+
+    document.getElementById('export-button').addEventListener('click', function() {
+        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + "numero,disponibilidade,nome,email,telefone\n"
+            + raffleData.map(e => `${e.numero},${e.disponibilidade},${e.nome},${e.email},${e.telefone}`).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "rifa.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    document.getElementById('reset-button').addEventListener('click', function() {
+        if (confirm('Tem certeza que deseja reiniciar a rifa? Todos os dados serão perdidos.')) {
+            const initialData = [];
+            for (let i = 1; i <= 1000; i++) {
+                initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
+            }
+            localStorage.setItem('raffleData', JSON.stringify(initialData));
+            alert('Rifa reiniciada com sucesso!');
+            location.reload(); // Recarrega a página após a reinicialização
+        }
+    });
+
+    document.getElementById('file-input').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const contents = e.target.result;
+                const lines = contents.split('\n').map(line => line.split(','));
+                const newRaffleData = lines.slice(1).map(line => ({
+                    numero: parseInt(line[0]),
+                    disponibilidade: line[1] === 'true',
+                    nome: line[2],
+                    email: line[3],
+                    telefone: line[4]
+                }));
+
+                localStorage.setItem('raffleData', JSON.stringify(newRaffleData));
+                alert('Novo Excel inserido com sucesso!');
+                location.reload(); // Recarrega a página após a atualização
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    document.getElementById('remove-participant-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const numberToRemove = parseInt(document.getElementById('remove-number').value);
+        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+        const index = raffleData.findIndex(item => item.numero === numberToRemove);
+
+        if (index !== -1 && !raffleData[index].disponibilidade) {
+            raffleData[index].disponibilidade = true;
+            raffleData[index].nome = '';
+            raffleData[index].telefone = '';
+            raffleData[index].email = '';
+
+            localStorage.setItem('raffleData', JSON.stringify(raffleData));
+            alert(`Número ${numberToRemove} foi removido com sucesso!`);
+            location.reload(); // Recarrega a página após a remoção
+        } else {
+            alert('Número não encontrado ou já disponível.');
+        }
+    });
+});
     </script>
 </body>
 </html>
