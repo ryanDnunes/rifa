@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rifa - Cliente e Administração</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         /* Estilos CSS aqui */
         .container {
@@ -106,6 +107,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Atualiza os números disponíveis ao carregar a página
     updateAvailableNumbers();
 
+    // Função para enviar mensagem para o WhatsApp
+    function sendWhatsAppMessage(number, phone) {
+        const message = `Parabéns! Você confirmou o número ${number}. Agora basta confirmar seu pagamento, a chave pix é cpf: 02856886000`;
+        const whatsappLink = `https://wa.me/5551985109343?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappLink);
+
+        // Oculta o botão "Confirmar" após enviar a mensagem
+        document.querySelector('button[type="submit"]').style.display = 'none';
+        // Exibe uma mensagem ou botão de confirmação ao enviar a mensagem
+        document.querySelector('.confirmacao_msg').style.display = 'block';
+    }
+
     // Evento ao confirmar um número na rifa
     document.getElementById('raffle-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -127,9 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('raffleData', JSON.stringify(raffleData));
             alert('Número confirmado com sucesso! Enviando mensagem para o WhatsApp.');
 
-            // Notifica outros dispositivos sobre a mudança
-            const event = new CustomEvent('raffleDataChanged', { detail: raffleData });
-            window.dispatchEvent(event);
+            sendWhatsAppMessage(number, phone); // Chama a função para enviar a mensagem
 
             location.reload(); // Recarrega a página após a confirmação
         } else {
@@ -227,23 +239,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Função para enviar mensagem para o WhatsApp
-            function sendWhatsAppMessage(number, phone) {
-                const message = `Parabéns! Você confirmou o número ${number}. Agora basta confirmar seu pagamento, a chave pix é cpf: 02856886000`;
-                const whatsappLink = `https://wa.me/5551985109343?text=${encodeURIComponent(message)}`;
-
-                window.open(whatsappLink);
-
-                // Oculta o botão "Satisfeito" após enviar o pedido
-                document.getElementById('satisfeito-btn').style.display = 'none';
-                // Exibe o botão "Trabalhos Realizados" ao enviar o pedido
-                document.querySelector('.trabalhos-realizados-btn').style.display = 'block';
-            }
-
             document.getElementById('remove-participant-form').addEventListener('submit', function(e) {
                 e.preventDefault();
 
                 const numberToRemove = parseInt(document.getElementById('remove-number').value);
+                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
                 const index = raffleData.findIndex(item => item.numero === numberToRemove);
 
                 if (index !== -1 && !raffleData[index].disponibilidade) {
