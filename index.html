@@ -156,110 +156,110 @@ document.addEventListener('DOMContentLoaded', function() {
         updateAvailableNumbers(); // Atualiza os números disponíveis na página
     });
 
-    document.getElementById('admin-button').addEventListener('click', function() {
-        document.getElementById('admin-login').style.display = 'block';
-    });
+            document.getElementById('admin-button').addEventListener('click', function() {
+                document.getElementById('admin-login').style.display = 'block';
+            });
 
-    document.getElementById('login-button').addEventListener('click', function() {
-        const password = document.getElementById('admin-password').value;
-        if (password === '2106tricolor1307') {
-            document.getElementById('admin-section').style.display = 'block';
-            document.getElementById('admin-login').style.display = 'none';
-        } else {
-            alert('Senha incorreta!');
-        }
-    });
+            document.getElementById('login-button').addEventListener('click', function() {
+                const password = document.getElementById('admin-password').value;
+                if (password === '2106tricolor1307') {
+                    document.getElementById('admin-section').style.display = 'block';
+                    document.getElementById('admin-login').style.display = 'none';
+                } else {
+                    alert('Senha incorreta!');
+                }
+            });
 
-    document.getElementById('draw-button').addEventListener('click', function() {
-        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
-        const chosenNumbers = raffleData.filter(item => !item.disponibilidade);
-        if (chosenNumbers.length < 3) {
-            alert('Não há números suficientes confirmados para sortear.');
-            return;
-        }
+            document.getElementById('draw-button').addEventListener('click', function() {
+                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+                const chosenNumbers = raffleData.filter(item => !item.disponibilidade);
+                if (chosenNumbers.length < 3) {
+                    alert('Não há números suficientes confirmados para sortear.');
+                    return;
+                }
 
-        const winners = [];
-        while (winners.length < 3) {
-            const index = Math.floor(Math.random() * chosenNumbers.length);
-            if (!winners.includes(chosenNumbers[index])) {
-                winners.push(chosenNumbers[index]);
-            }
-        }
+                const winners = [];
+                while (winners.length < 3) {
+                    const index = Math.floor(Math.random() * chosenNumbers.length);
+                    if (!winners.includes(chosenNumbers[index])) {
+                        winners.push(chosenNumbers[index]);
+                    }
+                }
 
-        alert(`Vencedores:\n1º: ${winners[0].nome} (${winners[0].telefone})\n2º: ${winners[1].nome} (${winners[1].telefone})\n3º: ${winners[2].nome} (${winners[2].telefone})`);
-    });
+                alert(`Vencedores:\n1º: ${winners[0].nome} (${winners[0].telefone})\n2º: ${winners[1].nome} (${winners[1].telefone})\n3º: ${winners[2].nome} (${winners[2].telefone})`);
+            });
 
-    document.getElementById('export-button').addEventListener('click', function() {
-        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + "numero,disponibilidade,nome,email,telefone\n"
-            + raffleData.map(e => `${e.numero},${e.disponibilidade},${e.nome},${e.email},${e.telefone}`).join("\n");
+            document.getElementById('export-button').addEventListener('click', function() {
+                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+                const csvContent = "data:text/csv;charset=utf-8,"
+                    + "numero,disponibilidade,nome,email,telefone\n"
+                    + raffleData.map(e => `${e.numero},${e.disponibilidade},${e.nome},${e.email},${e.telefone}`).join("\n");
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "rifa.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "rifa.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
 
-    document.getElementById('reset-button').addEventListener('click', function() {
-        if (confirm('Tem certeza que deseja reiniciar a rifa? Todos os dados serão perdidos.')) {
-            const initialData = [];
-            for (let i = 1; i <= 1000; i++) {
-                initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
-            }
-            localStorage.setItem('raffleData', JSON.stringify(initialData));
-            alert('Rifa reiniciada com sucesso!');
-            location.reload(); // Recarrega a página após a reinicialização
-        }
-    });
+            document.getElementById('reset-button').addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja reiniciar a rifa? Todos os dados serão perdidos.')) {
+                    const initialData = [];
+                    for (let i = 1; i <= 1000; i++) {
+                        initialData.push({ numero: i, disponibilidade: true, nome: '', email: '', telefone: '' });
+                    }
+                    localStorage.setItem('raffleData', JSON.stringify(initialData));
+                    alert('Rifa reiniciada com sucesso!');
+                    location.reload(); // Recarrega a página após a reinicialização
+                }
+            });
 
-    document.getElementById('file-input').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const contents = e.target.result;
-                const lines = contents.split('\n').map(line => line.split(','));
-                const newRaffleData = lines.slice(1).map(line => ({
-                    numero: parseInt(line[0]),
-                    disponibilidade: line[1] === 'true',
-                    nome: line[2],
-                    email: line[3],
-                    telefone: line[4]
-                }));
+            document.getElementById('file-input').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const contents = e.target.result;
+                        const lines = contents.split('\n').map(line => line.split(','));
+                        const newRaffleData = lines.slice(1).map(line => ({
+                            numero: parseInt(line[0]),
+                            disponibilidade: line[1] === 'true',
+                            nome: line[2],
+                            email: line[3],
+                            telefone: line[4]
+                        }));
 
-                localStorage.setItem('raffleData', JSON.stringify(newRaffleData));
-                alert('Novo Excel inserido com sucesso!');
-                location.reload(); // Recarrega a página após a atualização
-            };
-            reader.readAsText(file);
-        }
-    });
+                        localStorage.setItem('raffleData', JSON.stringify(newRaffleData));
+                        alert('Novo Excel inserido com sucesso!');
+                        location.reload(); // Recarrega a página após a atualização
+                    };
+                    reader.readAsText(file);
+                }
+            });
 
-    document.getElementById('remove-participant-form').addEventListener('submit', function(e) {
-        e.preventDefault();
+            document.getElementById('remove-participant-form').addEventListener('submit', function(e) {
+                e.preventDefault();
 
-        const numberToRemove = parseInt(document.getElementById('remove-number').value);
-        const raffleData = JSON.parse(localStorage.getItem('raffleData'));
-        const index = raffleData.findIndex(item => item.numero === numberToRemove);
+                const numberToRemove = parseInt(document.getElementById('remove-number').value);
+                const raffleData = JSON.parse(localStorage.getItem('raffleData'));
+                const index = raffleData.findIndex(item => item.numero === numberToRemove);
 
-        if (index !== -1 && !raffleData[index].disponibilidade) {
-            raffleData[index].disponibilidade = true;
-            raffleData[index].nome = '';
-            raffleData[index].telefone = '';
-            raffleData[index].email = '';
+                if (index !== -1 && !raffleData[index].disponibilidade) {
+                    raffleData[index].disponibilidade = true;
+                    raffleData[index].nome = '';
+                    raffleData[index].telefone = '';
+                    raffleData[index].email = '';
 
-            localStorage.setItem('raffleData', JSON.stringify(raffleData));
-            alert(`Número ${numberToRemove} foi removido com sucesso!`);
-            location.reload(); // Recarrega a página após a remoção
-        } else {
-            alert('Número não encontrado ou já disponível.');
-        }
-    });
-});
+                    localStorage.setItem('raffleData', JSON.stringify(raffleData));
+                    alert(`Número ${numberToRemove} foi removido com sucesso!`);
+                    location.reload(); // Recarrega a página após a remoção
+                } else {
+                    alert('Número não encontrado ou já disponível.');
+                }
+            });
+        });
     </script>
 </body>
 </html>
